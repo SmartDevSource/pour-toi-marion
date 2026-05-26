@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light only" />
     <meta name="theme-color" content="#111111" />
     <link rel="preload" as="image" href="assets/doubt.png" />
     <link rel="preload" as="image" href="assets/happy.png" />
@@ -12,7 +13,7 @@
     <title>Marion...</title>
     <style>
       :root {
-        color-scheme: light;
+        color-scheme: only light;
         --ink: #111111;
         --paper: #fff5df;
         --paper-soft: #ffecc5;
@@ -34,6 +35,10 @@
       html,
       body {
         min-height: 100%;
+      }
+
+      html {
+        forced-color-adjust: none;
       }
 
       body {
