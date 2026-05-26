@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light only" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <meta name="theme-color" content="#111111" />
     <link rel="preload" as="image" href="assets/doubt.png" />
     <link rel="preload" as="image" href="assets/happy.png" />
@@ -13,6 +14,7 @@
     <title>Marion...</title>
     <style>
       :root {
+        color-scheme: light;
         color-scheme: only light;
         --ink: #111111;
         --paper: #fff5df;
@@ -39,14 +41,115 @@
 
       html {
         forced-color-adjust: none;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body,
+      .page,
+      .flip,
+      .kicker,
+      .count,
+      .nav-button,
+      .progress,
+      .emotion,
+      .stamp,
+      .mark {
+        forced-color-adjust: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: light;
+          color-scheme: only light;
+        }
+
+        body {
+          background:
+            linear-gradient(rgba(255, 245, 223, 0.84), rgba(255, 245, 223, 0.84)),
+            radial-gradient(circle at 18% 16%, rgba(255, 103, 77, 0.28) 0 14%, transparent 15%),
+            radial-gradient(circle at 83% 22%, rgba(36, 87, 214, 0.26) 0 12%, transparent 13%),
+            repeating-linear-gradient(45deg, rgba(17, 17, 17, 0.08) 0 4px, transparent 4px 30px),
+            repeating-linear-gradient(-45deg, rgba(255, 195, 61, 0.17) 0 18px, transparent 18px 36px),
+            #fff5df !important;
+          background-size: auto, auto, auto, 220px 220px, 160px 160px, auto !important;
+          background-position: center !important;
+          color: #111111 !important;
+        }
+
+        .book::before {
+          border-color: #111111 !important;
+          background: #2457d6 !important;
+        }
+
+        .book::after {
+          border-color: #111111 !important;
+          background: #ff674d !important;
+        }
+
+        .page,
+        .flip {
+          border-color: #111111 !important;
+          background:
+            linear-gradient(90deg, rgba(17, 17, 17, 0.13), transparent 13%),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 236, 197, 0.96)),
+            #fff5df !important;
+          color: #111111 !important;
+          box-shadow: 12px 12px 0 #111111 !important;
+        }
+
+        .mark,
+        .count,
+        .kicker,
+        .emotion,
+        .nav-button,
+        .progress,
+        .stamp,
+        .page-deco {
+          border-color: #111111 !important;
+          color: #111111 !important;
+          box-shadow: 4px 4px 0 #111111 !important;
+        }
+
+        .mark,
+        .deco-two {
+          background: #ffc33d !important;
+        }
+
+        .count,
+        .kicker,
+        .emotion,
+        .nav-button,
+        .progress {
+          background: #ffffff !important;
+        }
+
+        .bar {
+          background: linear-gradient(90deg, #26b982, #ffc33d, #ff674d) !important;
+          border-right-color: #111111 !important;
+        }
+
+        .deco-line {
+          background: repeating-linear-gradient(
+            180deg,
+            transparent 0,
+            transparent 29px,
+            rgba(17, 17, 17, 0.8) 30px,
+            rgba(17, 17, 17, 0.8) 33px
+          ) !important;
+        }
       }
 
       body {
         margin: 0;
         background:
-          linear-gradient(rgba(255, 245, 223, 0.82), rgba(255, 245, 223, 0.82)),
-          url("assets/book-bg.png") center / cover fixed,
+          linear-gradient(rgba(255, 245, 223, 0.84), rgba(255, 245, 223, 0.84)),
+          radial-gradient(circle at 18% 16%, rgba(255, 103, 77, 0.28) 0 14%, transparent 15%),
+          radial-gradient(circle at 83% 22%, rgba(36, 87, 214, 0.26) 0 12%, transparent 13%),
+          repeating-linear-gradient(45deg, rgba(17, 17, 17, 0.08) 0 4px, transparent 4px 30px),
+          repeating-linear-gradient(-45deg, rgba(255, 195, 61, 0.17) 0 18px, transparent 18px 36px),
           #fff5df;
+        background-size: auto, auto, auto, 220px 220px, 160px 160px, auto;
+        background-position: center;
         color: var(--ink);
         overflow: hidden;
       }
