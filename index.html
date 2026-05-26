@@ -6,6 +6,7 @@
     <meta name="color-scheme" content="light" />
     <meta name="supported-color-schemes" content="light" />
     <meta name="theme-color" content="#111111" />
+    <link rel="preload" as="audio" href="assets/flip_book.mp3" />
     <link rel="preload" as="image" href="assets/doubt.png" />
     <link rel="preload" as="image" href="assets/happy.png" />
     <link rel="preload" as="image" href="assets/sad.png" />
@@ -53,7 +54,10 @@
       .progress,
       .emotion,
       .stamp,
-      .mark {
+      .mark,
+      .heart-icon,
+      .heart-main,
+      .heart-shadow {
         forced-color-adjust: none;
       }
 
@@ -126,6 +130,15 @@
         .bar {
           background: linear-gradient(90deg, #26b982, #ffc33d, #ff674d) !important;
           border-right-color: #111111 !important;
+        }
+
+        .heart-main {
+          fill: #ff674d !important;
+          stroke: #111111 !important;
+        }
+
+        .heart-shadow {
+          fill: #111111 !important;
         }
 
         .deco-line {
@@ -345,6 +358,17 @@
         gap: 14px;
       }
 
+      .copy.is-final {
+        justify-items: center;
+        text-align: center;
+        gap: 20px;
+      }
+
+      .copy.is-final h2 {
+        font-size: clamp(2.4rem, 6vw, 3.2rem);
+        line-height: 0.98;
+      }
+
       .emotion {
         width: min(142px, 44%);
         aspect-ratio: 1;
@@ -407,6 +431,38 @@
         line-height: 1.2;
         font-weight: 950;
         transform: rotate(-1.5deg);
+      }
+
+      .heart-wrap {
+        width: 100%;
+        display: grid;
+        place-items: center;
+        padding: 6px 0 2px;
+      }
+
+      .signature {
+        margin-top: 2px;
+        width: 100%;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 900;
+      }
+
+      .heart-icon {
+        width: min(190px, 66%);
+        height: auto;
+        overflow: visible;
+      }
+
+      .heart-main {
+        fill: var(--coral);
+        stroke: var(--ink);
+        stroke-width: 4;
+        stroke-linejoin: round;
+      }
+
+      .heart-shadow {
+        fill: var(--ink);
       }
 
       .flip {
@@ -561,7 +617,7 @@
     <main class="app" aria-label="Livre pour Marion">
       <header class="brand" aria-hidden="true">
         <div class="mark">M</div>
-        <div class="count" id="count">01 / 15</div>
+        <div class="count" id="count">01 / 16</div>
       </header>
 
       <section class="stage">
@@ -699,6 +755,15 @@
           imageAlt: "Illustration d'une joie immense retrouvée",
           tilt: "-1deg",
         },
+        {
+          kicker: "fin",
+          title: "Je tiens à toi.",
+          body: "",
+          stamp: "avec tout mon coeur.",
+          accent: "#ff674d",
+          heart: true,
+          signature: "Emmanuel.",
+        },
       ];
 
       const page = document.querySelector("#page");
@@ -707,6 +772,67 @@
       const bar = document.querySelector("#bar");
       const prev = document.querySelector("#prev");
       const next = document.querySelector("#next");
+      const turnSound = new Audio("assets/flip_book.mp3");
+      turnSound.preload = "auto";
+      turnSound.setAttribute("playsinline", "");
+      let turnSoundUnlocked = false;
+
+      function cleanupTurnSoundUnlockListeners() {
+        document.removeEventListener("pointerdown", unlockTurnSound, unlockListenerOptions);
+        document.removeEventListener("touchstart", unlockTurnSound, unlockListenerOptions);
+        document.removeEventListener("keydown", unlockTurnSound);
+      }
+
+      function unlockTurnSound() {
+        if (turnSoundUnlocked) {
+          cleanupTurnSoundUnlockListeners();
+          return;
+        }
+
+        try {
+          turnSound.currentTime = 0;
+          const unlockPromise = turnSound.play();
+          if (unlockPromise && typeof unlockPromise.then === "function") {
+            unlockPromise
+              .then(() => {
+                turnSound.pause();
+                turnSound.currentTime = 0;
+                turnSoundUnlocked = true;
+                cleanupTurnSoundUnlockListeners();
+              })
+              .catch(() => {
+                // Ignore: this can fail until a valid user gesture occurs.
+              });
+            return;
+          }
+
+          turnSound.pause();
+          turnSound.currentTime = 0;
+          turnSoundUnlocked = true;
+          cleanupTurnSoundUnlockListeners();
+        } catch {
+          // Ignore: we retry on next gesture.
+        }
+      }
+
+      function playTurnSound() {
+        try {
+          turnSound.currentTime = 0;
+          const playPromise = turnSound.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {
+              // Ignore: browsers can still block if not yet unlocked.
+            });
+          }
+        } catch {
+          // Ignore playback failures.
+        }
+      }
+
+      const unlockListenerOptions = { passive: true };
+      document.addEventListener("pointerdown", unlockTurnSound, unlockListenerOptions);
+      document.addEventListener("touchstart", unlockTurnSound, unlockListenerOptions);
+      document.addEventListener("keydown", unlockTurnSound);
       const requestedPage = Number(new URLSearchParams(window.location.search).get("p"));
       let index = Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= pages.length
         ? requestedPage - 1
@@ -720,14 +846,20 @@
           <span class="page-deco deco-two"></span>
           <div class="page-inner">
             <div class="kicker">${item.kicker}</div>
-            <div class="copy">
+            <div class="copy ${item.heart ? "is-final" : ""}">
               ${index === 0 ? `<h1>${item.title}</h1>` : `<h2>${item.title}</h2>`}
-              <p>${item.body}</p>
+                    ${item.body ? `<p>${item.body}</p>` : ""}
               ${
                 item.image
                   ? `<img class="emotion" src="${item.image}" alt="${item.imageAlt}" style="--tilt: ${item.tilt || "2deg"}" loading="eager" decoding="sync" />`
                   : ""
               }
+              ${
+                item.heart
+                  ? `<div class="heart-wrap" aria-hidden="true"><svg class="heart-icon" viewBox="0 0 120 112"><path class="heart-shadow" d="M66 106 L58 98 C28 72 10 56 10 36 C10 19 23 8 38 8 C48 8 57 13 63 23 C69 13 78 8 88 8 C103 8 116 19 116 36 C116 56 98 72 68 98 Z" transform="translate(6 6)"></path><path class="heart-main" d="M60 100 L52 92 C22 66 4 50 4 30 C4 13 17 2 32 2 C42 2 51 7 57 17 C63 7 72 2 82 2 C97 2 110 13 110 30 C110 50 92 66 62 92 Z"></path></svg></div>`
+                  : ""
+              }
+              ${item.signature ? `<div class="signature">${item.signature}</div>` : ""}
             </div>
             <div class="stamp">${item.stamp}</div>
           </div>
@@ -750,6 +882,7 @@
         const target = index + direction;
         if (turning || target < 0 || target >= pages.length) return;
         turning = true;
+        playTurnSound();
 
         const flip = document.createElement("div");
         flip.className = `flip ${direction > 0 ? "forward" : "back"} ${pages[index].image ? "has-image" : ""}`;
