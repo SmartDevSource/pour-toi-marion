@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111111" />
+    <link rel="preload" as="image" href="assets/doubt.png" />
+    <link rel="preload" as="image" href="assets/happy.png" />
+    <link rel="preload" as="image" href="assets/sad.png" />
+    <link rel="preload" as="image" href="assets/angry.png" />
+    <link rel="preload" as="image" href="assets/extatic.png" />
+    <title>Marion...</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #111111;
+        --paper: #fff5df;
+        --paper-soft: #ffecc5;
+        --coral: #ff674d;
+        --blue: #2457d6;
+        --yellow: #ffc33d;
+        --green: #26b982;
+        --shadow: 12px 12px 0 #111111;
+        --radius: 8px;
+        --page-pad: 28px;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(rgba(255, 245, 223, 0.82), rgba(255, 245, 223, 0.82)),
+          url("assets/book-bg.png") center / cover fixed,
+          #fff5df;
+        color: var(--ink);
+        overflow: hidden;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .app {
+        min-height: 100svh;
+        padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 14px;
+        place-items: center;
+        position: relative;
+        isolation: isolate;
+      }
+
+      .brand {
+        width: min(430px, calc(100vw - 64px));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .mark {
+        display: inline-grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+        background: var(--yellow);
+        box-shadow: 4px 4px 0 var(--ink);
+        font-weight: 950;
+      }
+
+      .count {
+        min-width: 76px;
+        padding: 8px 10px;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 4px 4px 0 var(--ink);
+        text-align: center;
+        font-size: 0.84rem;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .stage {
+        width: min(430px, calc(100vw - 64px));
+        min-width: 0;
+        height: min(690px, max(410px, calc(100svh - 174px)));
+        display: grid;
+        place-items: center;
+        perspective: 1400px;
+      }
+
+      .book {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+      }
+
+      .book::before {
+        content: "";
+        position: absolute;
+        inset: 12px -4px -14px 16px;
+        border: 3px solid var(--ink);
+        border-radius: var(--radius);
+        background: var(--blue);
+        transform: rotate(1.1deg);
+        z-index: -2;
+      }
+
+      .book::after {
+        content: "";
+        position: absolute;
+        inset: 28px -10px -24px 30px;
+        border: 3px solid var(--ink);
+        border-radius: var(--radius);
+        background: var(--coral);
+        transform: rotate(2deg);
+        z-index: -3;
+      }
+
+      .page,
+      .flip {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: 100%;
+        border: 4px solid var(--ink);
+        border-radius: var(--radius);
+        background:
+          linear-gradient(90deg, rgba(17, 17, 17, 0.13), transparent 13%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 236, 197, 0.96)),
+          var(--paper);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .page {
+        position: relative;
+        display: grid;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .page:focus-visible,
+      .nav-button:focus-visible {
+        outline: 4px solid var(--blue);
+        outline-offset: 4px;
+      }
+
+      .page-inner {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: 100%;
+        padding: var(--page-pad) calc(var(--page-pad) + 18px) var(--page-pad) var(--page-pad);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .page-deco {
+        position: absolute;
+        border: 3px solid var(--ink);
+        pointer-events: none;
+      }
+
+      .deco-one {
+        width: 92px;
+        height: 92px;
+        right: -25px;
+        top: -22px;
+        background: var(--accent, var(--coral));
+        transform: rotate(12deg);
+      }
+
+      .deco-two {
+        width: 54px;
+        height: 54px;
+        left: 24px;
+        bottom: 22px;
+        background: var(--yellow);
+        border-radius: 50%;
+        box-shadow: 5px 5px 0 var(--ink);
+      }
+
+      .deco-line {
+        left: -2px;
+        top: 0;
+        width: 18px;
+        height: 100%;
+        border-width: 0 3px 0 0;
+        background: repeating-linear-gradient(
+          180deg,
+          transparent 0,
+          transparent 29px,
+          rgba(17, 17, 17, 0.8) 30px,
+          rgba(17, 17, 17, 0.8) 33px
+        );
+      }
+
+      .kicker {
+        width: fit-content;
+        max-width: 100%;
+        padding: 7px 10px;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 4px 4px 0 var(--ink);
+        font-size: 0.78rem;
+        font-weight: 950;
+        text-transform: uppercase;
+        letter-spacing: 0;
+      }
+
+      .copy {
+        min-width: 0;
+        align-self: center;
+        display: grid;
+        gap: 14px;
+      }
+
+      .emotion {
+        width: min(142px, 44%);
+        aspect-ratio: 1;
+        justify-self: end;
+        border: 3px solid var(--ink);
+        border-radius: var(--radius);
+        background: #ffffff;
+        box-shadow: 6px 6px 0 var(--ink);
+        object-fit: cover;
+        transform: rotate(var(--tilt, 2deg));
+      }
+
+      .page.has-image h2,
+      .flip.has-image h2 {
+        font-size: 2.28rem;
+      }
+
+      .page.has-image p,
+      .flip.has-image p {
+        font-size: 1rem;
+        line-height: 1.38;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 3.8rem;
+        line-height: 0.92;
+        letter-spacing: 0;
+        text-wrap: balance;
+        overflow-wrap: anywhere;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 2.55rem;
+        line-height: 0.96;
+        letter-spacing: 0;
+        text-wrap: balance;
+        overflow-wrap: anywhere;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1.08rem;
+        line-height: 1.45;
+        font-weight: 650;
+        text-wrap: pretty;
+        overflow-wrap: anywhere;
+      }
+
+      .stamp {
+        width: fit-content;
+        max-width: 100%;
+        padding: 10px 12px;
+        border: 3px solid var(--ink);
+        border-radius: var(--radius);
+        background: var(--accent, var(--coral));
+        box-shadow: 5px 5px 0 var(--ink);
+        font-size: 0.9rem;
+        line-height: 1.2;
+        font-weight: 950;
+        transform: rotate(-1.5deg);
+      }
+
+      .flip {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        transform-origin: left center;
+        backface-visibility: hidden;
+        pointer-events: none;
+      }
+
+      .flip.forward {
+        animation: turnForward 620ms cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+      }
+
+      .flip.back {
+        transform-origin: right center;
+        animation: turnBack 620ms cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+      }
+
+      @keyframes turnForward {
+        0% {
+          transform: rotateY(0deg) translateZ(2px);
+          filter: brightness(1);
+        }
+        46% {
+          filter: brightness(0.92);
+        }
+        100% {
+          transform: rotateY(-118deg) translateZ(2px);
+          filter: brightness(0.78);
+        }
+      }
+
+      @keyframes turnBack {
+        0% {
+          transform: rotateY(0deg) translateZ(2px);
+          filter: brightness(1);
+        }
+        100% {
+          transform: rotateY(118deg) translateZ(2px);
+          filter: brightness(0.8);
+        }
+      }
+
+      .controls {
+        width: min(430px, calc(100vw - 64px));
+        display: grid;
+        grid-template-columns: 52px 1fr 52px;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-button {
+        width: 52px;
+        height: 52px;
+        border: 3px solid var(--ink);
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 5px 5px 0 var(--ink);
+        color: var(--ink);
+        font-size: 1.6rem;
+        font-weight: 950;
+        cursor: pointer;
+      }
+
+      .nav-button:disabled {
+        opacity: 0.45;
+        cursor: default;
+        transform: translate(3px, 3px);
+        box-shadow: 2px 2px 0 var(--ink);
+      }
+
+      .progress {
+        height: 14px;
+        border: 3px solid var(--ink);
+        border-radius: 999px;
+        background: #ffffff;
+        overflow: hidden;
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+
+      .bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--green), var(--yellow), var(--coral));
+        border-right: 3px solid var(--ink);
+        transition: width 260ms ease;
+      }
+
+      @media (max-width: 380px) {
+        :root {
+          --page-pad: 22px;
+        }
+
+        h1 {
+          font-size: 3.1rem;
+        }
+
+        h2 {
+          font-size: 2.08rem;
+        }
+
+        p {
+          font-size: 1rem;
+          line-height: 1.4;
+        }
+
+        .page.has-image h2,
+        .flip.has-image h2 {
+          font-size: 1.86rem;
+        }
+
+        .page.has-image p,
+        .flip.has-image p {
+          font-size: 0.93rem;
+        }
+
+        .emotion {
+          width: min(118px, 42%);
+        }
+
+        .stamp {
+          font-size: 0.82rem;
+        }
+      }
+
+      @media (min-width: 720px) {
+        .app {
+          padding-block: 28px;
+        }
+
+        .stage,
+        .brand,
+        .controls {
+          width: 430px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 1ms !important;
+          scroll-behavior: auto !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app" aria-label="Livre pour Marion">
+      <header class="brand" aria-hidden="true">
+        <div class="mark">M</div>
+        <div class="count" id="count">01 / 15</div>
+      </header>
+
+      <section class="stage">
+        <div class="book" id="book">
+          <div class="page" id="page" role="button" tabindex="0" aria-label="Page suivante"></div>
+        </div>
+      </section>
+
+      <nav class="controls" aria-label="Navigation du livre">
+        <button class="nav-button" id="prev" type="button" aria-label="Page précédente">‹</button>
+        <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+        <button class="nav-button" id="next" type="button" aria-label="Page suivante">›</button>
+      </nav>
+    </main>
+
+    <script>
+      const pages = [
+        {
+          kicker: "page une",
+          title: "Marion...",
+          body: "Je ne t'écris pas ça pour te forcer à choisir. Je t'écris ça parce qu'à force d'attendre entre deux silences, on finit parfois par oublier ce qu'on ressent vraiment.",
+          stamp: "respire. lis doucement.",
+          accent: "#ff674d",
+        },
+        {
+          kicker: "ce qui est là",
+          title: "Il faut réellement que tu prennes conscience...",
+          body: "Ce que tu vis n'est pas léger. Ce n'est pas juste une hésitation mignonne, ni une parenthèse floue. C'est quelque chose qui pèse sur ton coeur, sur ton moral, sur ta paix.",
+          stamp: "ton ressenti compte.",
+          accent: "#2457d6",
+          image: "assets/doubt.png",
+          imageAlt: "Illustration d'un doute silencieux",
+          tilt: "-2deg",
+        },
+        {
+          kicker: "l'attache",
+          title: "Tu es encore reliée à une histoire qui n'est pas finie en toi.",
+          body: "Même si la relation est terminée depuis un moment, une partie de toi reste accrochée à ce qu'elle a représenté, à ce qu'elle aurait pu redevenir, à ce qu'il dit encore.",
+          stamp: "ce n'est pas une faiblesse.",
+          accent: "#26b982",
+        },
+        {
+          kicker: "le flou",
+          title: "Quand quelqu'un dit “je t'aime” mais ne construit rien...",
+          body: "Ça donne de l'espoir sans donner de direction. Ça garde ton coeur ouvert, mais ça ne lui offre pas d'abri. Et au bout d'un moment, ce flou devient une forme de douleur.",
+          stamp: "l'amour a besoin d'actes.",
+          accent: "#ffc33d",
+        },
+        {
+          kicker: "l'attente",
+          title: "Tu n'es pas faite pour vivre suspendue.",
+          body: "Suspendue à un message. Suspendue à un changement d'avis. Suspendue à l'idée qu'un jour il saura enfin ce qu'il veut. Pendant ce temps, toi, tu encaisses.",
+          stamp: "tu mérites du clair.",
+          accent: "#ff674d",
+          image: "assets/sad.png",
+          imageAlt: "Illustration d'une tristesse discrète",
+          tilt: "-1.5deg",
+        },
+        {
+          kicker: "la vérité",
+          title: "L'indécision de quelqu'un peut devenir ta prison.",
+          body: "Pas parce qu'il est forcément mauvais. Pas parce que tu es naïve. Mais parce qu'un lien ambigu, répété, entretenu, finit par prendre toute la place disponible dans ton esprit.",
+          stamp: "nommer, c'est déjà sortir.",
+          accent: "#2457d6",
+          image: "assets/angry.png",
+          imageAlt: "Illustration d'une colère qui protège",
+          tilt: "1.5deg",
+        },
+        {
+          kicker: "toi",
+          title: "Et au milieu de ça, il y a toi.",
+          body: "Toi qui essaies d'être juste. Toi qui ne veux blesser personne. Toi qui ressens trop pour faire semblant. Toi qui portes une bataille intérieure que peu de gens voient vraiment.",
+          stamp: "tu n'as pas à minimiser.",
+          accent: "#26b982",
+        },
+        {
+          kicker: "nous",
+          title: "Et puis il y a cette rencontre récente.",
+          body: "Un mois seulement. Deux week-ends entiers. Pas assez pour prétendre tout savoir, mais assez pour sentir qu'il s'est passé quelque chose de rare, de simple, de fort.",
+          stamp: "une connexion, pas une pression.",
+          accent: "#ffc33d",
+          image: "assets/happy.png",
+          imageAlt: "Illustration d'une joie spontanée",
+          tilt: "-2deg",
+        },
+        {
+          kicker: "important",
+          title: "Je ne veux pas gagner contre ton passé.",
+          body: "Je ne veux pas être choisi parce que tu fuis une douleur. Je veux seulement que tu te regardes avec honnêteté, et que tu voies ce qui te fait du bien et ce qui te garde en morceaux.",
+          stamp: "pas de compétition.",
+          accent: "#ff674d",
+        },
+        {
+          kicker: "question",
+          title: "Demande-toi ce qu'il te donne vraiment.",
+          body: "Pas ce qu'il promet dans les moments chargés d'émotion. Pas ce qu'il pourrait devenir. Ce qu'il te donne, concrètement, aujourd'hui : de la paix, ou de l'attente ?",
+          stamp: "le présent parle fort.",
+          accent: "#2457d6",
+        },
+        {
+          kicker: "limite",
+          title: "Aimer quelqu'un ne devrait pas t'obliger à disparaître.",
+          body: "Tu peux avoir de la tendresse pour lui, de la nostalgie, de l'attachement. Mais tu as aussi le droit de poser une limite à ce qui te blesse.",
+          stamp: "une limite peut être douce.",
+          accent: "#26b982",
+        },
+        {
+          kicker: "clarté",
+          title: "Ce dont tu as besoin, ce n'est pas d'un demi-amour.",
+          body: "Tu as besoin d'une présence qui assume. D'une parole qui se transforme en choix. D'un lien qui ne te laisse pas deviner ta place chaque semaine.",
+          stamp: "ta place doit être évidente.",
+          accent: "#ffc33d",
+        },
+        {
+          kicker: "courage",
+          title: "Choisir la paix peut faire mal au début.",
+          body: "Parce que ça oblige à lâcher une possibilité. Mais parfois, lâcher une possibilité floue, c'est récupérer une réalité : ton sommeil, ta légèreté, ton estime, ton souffle.",
+          stamp: "la paix aussi se choisit.",
+          accent: "#ff674d",
+        },
+        {
+          kicker: "honnêteté",
+          title: "Je ne te demande pas de venir vers moi.",
+          body: "Je te demande seulement de ne pas rester là où ton coeur s'abîme. Même si ton choix n'est pas moi, qu'il soit au moins un choix qui te respecte vraiment.",
+          stamp: "tu restes libre.",
+          accent: "#2457d6",
+        },
+        {
+          kicker: "dernière page",
+          title: "Marion, tu mérites une histoire qui te rend calme.",
+          body: "Claire, tendre et assumée. Une histoire où tu n'as pas besoin de supplier le destin pour savoir si tu comptes !",
+          stamp: "choisis-toi d'abord.",
+          accent: "#ff674d",
+          image: "assets/extatic.png",
+          imageAlt: "Illustration d'une joie immense retrouvée",
+          tilt: "-1deg",
+        },
+      ];
+
+      const page = document.querySelector("#page");
+      const book = document.querySelector("#book");
+      const count = document.querySelector("#count");
+      const bar = document.querySelector("#bar");
+      const prev = document.querySelector("#prev");
+      const next = document.querySelector("#next");
+      const requestedPage = Number(new URLSearchParams(window.location.search).get("p"));
+      let index = Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= pages.length
+        ? requestedPage - 1
+        : 0;
+      let turning = false;
+
+      function template(item) {
+        return `
+          <span class="page-deco deco-line"></span>
+          <span class="page-deco deco-one"></span>
+          <span class="page-deco deco-two"></span>
+          <div class="page-inner">
+            <div class="kicker">${item.kicker}</div>
+            <div class="copy">
+              ${index === 0 ? `<h1>${item.title}</h1>` : `<h2>${item.title}</h2>`}
+              <p>${item.body}</p>
+              ${
+                item.image
+                  ? `<img class="emotion" src="${item.image}" alt="${item.imageAlt}" style="--tilt: ${item.tilt || "2deg"}" loading="eager" decoding="sync" />`
+                  : ""
+              }
+            </div>
+            <div class="stamp">${item.stamp}</div>
+          </div>
+        `;
+      }
+
+      function render() {
+        const item = pages[index];
+        page.style.setProperty("--accent", item.accent);
+        page.classList.toggle("has-image", Boolean(item.image));
+        page.innerHTML = template(item);
+        count.textContent = `${String(index + 1).padStart(2, "0")} / ${pages.length}`;
+        bar.style.width = `${((index + 1) / pages.length) * 100}%`;
+        prev.disabled = index === 0 || turning;
+        next.disabled = index === pages.length - 1 || turning;
+        page.setAttribute("aria-label", index === pages.length - 1 ? "Dernière page" : "Page suivante");
+      }
+
+      function turn(direction) {
+        const target = index + direction;
+        if (turning || target < 0 || target >= pages.length) return;
+        turning = true;
+
+        const flip = document.createElement("div");
+        flip.className = `flip ${direction > 0 ? "forward" : "back"} ${pages[index].image ? "has-image" : ""}`;
+        flip.style.setProperty("--accent", pages[index].accent);
+        flip.innerHTML = page.innerHTML;
+        book.appendChild(flip);
+
+        index = target;
+        render();
+
+        window.setTimeout(() => {
+          flip.remove();
+          turning = false;
+          render();
+        }, 640);
+      }
+
+      page.addEventListener("click", () => {
+        if (index < pages.length - 1) turn(1);
+      });
+
+      next.addEventListener("click", () => turn(1));
+      prev.addEventListener("click", () => turn(-1));
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === " ") turn(1);
+        if (event.key === "ArrowLeft") turn(-1);
+      });
+
+      let touchStartX = 0;
+      page.addEventListener(
+        "touchstart",
+        (event) => {
+          touchStartX = event.changedTouches[0].clientX;
+        },
+        { passive: true },
+      );
+
+      page.addEventListener(
+        "touchend",
+        (event) => {
+          const delta = event.changedTouches[0].clientX - touchStartX;
+          if (Math.abs(delta) < 42) return;
+          turn(delta < 0 ? 1 : -1);
+        },
+        { passive: true },
+      );
+
+      render();
+    </script>
+  </body>
+</html>
